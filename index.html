@@ -104,41 +104,17 @@
     #toast.show { transform: translateX(-50%) translateY(0); }
 
 
-    /* ══════════════════════════════════════════════════════
-       LOGO REVEAL — SVG WAVE MASK
-    ══════════════════════════════════════════════════════ */
-    .logo-reveal-wrap {
-      position: relative;
-      display: inline-block;
-      /* overflow hidden keeps the reveal clean */
-      overflow: visible;
-    }
-
-    /* The actual logo image */
-    .logo-reveal-img {
+    
+    /* ═══════════════════════════════════════════════
+       SITE LOGO — mix-blend-mode:screen removes
+       the black PNG background on dark pages
+    ═══════════════════════════════════════════════ */
+    .site-logo {
       display: block;
-      position: relative;
-      /* clip-path driven by the SVG clipPath animation */
-      clip-path: url(#wave-clip);
-      /* After reveal, allow mix-blend for wave interaction */
       mix-blend-mode: screen;
-      filter: brightness(1.15) contrast(1.05);
+      filter: brightness(1.08);
+      animation: fadeDown 0.7s 0.2s var(--ease) both;
     }
-
-    /* Fallback glow underneath the logo */
-    .logo-reveal-glow {
-      position: absolute;
-      inset: -30%;
-      background: radial-gradient(ellipse 80% 60% at 50% 50%,
-        rgba(214,43,43,0.18) 0%, transparent 70%);
-      pointer-events: none;
-      opacity: 0;
-      animation: glowIn 0.6s 2.6s var(--ease) forwards;
-    }
-
-    /* Hidden SVG that holds our clip path */
-    #svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
-
 
     /* ═══════════════════════════════════════════════
        POST VIEW — VISITOR FORM
@@ -151,15 +127,13 @@
     }
 
     .post-logo-wrap {
-      margin-bottom: 30px;
-      animation: fadeDown 0.5s 2.8s var(--ease) both;
+      margin-bottom: 36px;
     }
-    .post-logo-wrap .logo-reveal-img { height: 52px; width: auto; }
 
     .ornament {
       display: flex; align-items: center; gap: 14px;
       margin-bottom: 22px;
-      animation: fadeDown 0.6s 3.0s var(--ease) both;
+      animation: fadeDown 0.6s 0.35s var(--ease) both;
     }
     .orn-line {
       height: 1px; width: 72px;
@@ -174,7 +148,7 @@
       font-weight: 700; line-height: 1.15;
       text-align: center; letter-spacing: -0.025em;
       margin-bottom: 6px;
-      animation: fadeDown 0.6s 3.1s var(--ease) both;
+      animation: fadeDown 0.6s 0.50s var(--ease) both;
     }
     .post-h1 em { font-style: italic; color: var(--gold-light); }
 
@@ -183,7 +157,7 @@
       font-size: 13px; letter-spacing: 0.22em;
       text-transform: uppercase; color: var(--text-2);
       text-align: center; margin-bottom: 38px;
-      animation: fadeDown 0.6s 3.2s var(--ease) both;
+      animation: fadeDown 0.6s 0.65s var(--ease) both;
     }
 
     .post-card {
@@ -192,7 +166,7 @@
       border: 1px solid var(--border-s);
       border-radius: 22px; padding: 34px 30px;
       backdrop-filter: blur(28px);
-      animation: fadeUp 0.65s 3.3s var(--ease) both;
+      animation: fadeUp  0.65s 0.80s var(--ease) both;
     }
 
     .field { margin-bottom: 20px; }
@@ -316,14 +290,6 @@
     .wall-hdr-left { display: flex; align-items: center; gap: 20px; flex-shrink: 0; }
 
     /* Logo in wall header — smaller, always visible after reveal */
-    .wall-logo-reveal { height: 40px; width: auto; }
-    .wall-logo-reveal .logo-reveal-img { height: 40px; width: auto; }
-
-    .wall-hdr-vr { width: 1px; height: 36px; background: var(--border-s); }
-    .wall-hdr-kaizen {
-      font-family: var(--font-a); font-size: 12px; font-weight: 300;
-      letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-2);
-    }
 
     .wall-hdr-center { flex: 1; text-align: center; }
     .wall-title {
@@ -354,62 +320,7 @@
         var(--gold-line) 80%, transparent);
     }
 
-    /* ── Splash / Logo Hero (wall only) ── */
-    #wall-splash {
-      position: fixed; inset: 0; z-index: 100;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      background: rgba(6,9,16,0.82);
-      backdrop-filter: blur(4px);
-      transition: opacity 0.8s var(--ease);
-    }
-    #wall-splash.fade-out { opacity: 0; pointer-events: none; }
-
-    .splash-logo-wrap {
-      position: relative;
-      margin-bottom: 36px;
-    }
-    .splash-logo-img {
-      height: clamp(70px, 12vw, 110px);
-      width: auto;
-      display: block;
-      clip-path: url(#wave-clip-splash);
-      mix-blend-mode: screen;
-      filter: brightness(1.2);
-    }
-    .splash-logo-glow {
-      position: absolute; inset: -40%;
-      background: radial-gradient(ellipse 80% 60% at 50% 50%,
-        rgba(214,43,43,0.20) 0%, transparent 70%);
-      opacity: 0;
-      animation: glowIn 0.8s 2.6s var(--ease) forwards;
-      pointer-events: none;
-    }
-
-    .splash-tagline {
-      font-family: var(--font-a);
-      font-size: clamp(12px, 1.4vw, 16px);
-      letter-spacing: 0.32em; text-transform: uppercase;
-      color: var(--text-2); text-align: center;
-      opacity: 0;
-      animation: fadeUp 0.8s 2.8s var(--ease) forwards;
-    }
-    .splash-tagline em { color: var(--gold); font-style: normal; }
-
-    .splash-line {
-      width: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      margin: 18px auto;
-      animation: lineExpand 0.8s 3.0s var(--ease) forwards;
-    }
-    .splash-enter {
-      font-family: var(--font-b); font-size: 11px;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--text-m); opacity: 0;
-      animation: fadeUp 0.6s 3.5s var(--ease) forwards;
-      cursor: pointer;
-    }
-    .splash-enter:hover { color: var(--gold); }
+    
 
     /* ── Wall body ── */
     .wall-body { flex: 1; padding: 26px 44px 40px; }
@@ -506,12 +417,9 @@
     @keyframes spin     { to { transform:rotate(360deg); } }
     @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.45;transform:scale(.75);} }
     @keyframes shimmerBtn { 0%,100%{background-position:0% 50%;} 50%{background-position:100% 50%;} }
-    @keyframes glowIn   { from { opacity:0; } to { opacity:1; } }
-    @keyframes lineExpand { from { width:0; } to { width:240px; } }
+    @keyframes glowIn   { from { opacity:0; } to { opacity:1; } } to { width:240px; } }
 
     /* Wave reveal keyframe — animates the wave clipPath x-offset */
-    @keyframes waveReveal {
-      0%   { transform: translateX(-105%); }
       100% { transform: translateX(105%); }
     }
 
@@ -523,32 +431,7 @@
 </head>
 <body>
 
-<!-- ── SVG clip definitions ── -->
-<svg id="svg-defs" aria-hidden="true">
-  <defs>
-    <!-- Wave clip for post-view logo -->
-    <clipPath id="wave-clip" clipPathUnits="objectBoundingBox">
-      <path id="wave-path" d="M -1.1 0 Q -0.85 0.5 -0.6 0 Q -0.35 -0.5 -0.1 0 Q 0.15 0.5 0.4 0 Q 0.65 -0.5 0.9 0 Q 1.15 0.5 1.4 0 L 1.4 1 L -1.1 1 Z">
-        <animateTransform attributeName="transform" type="translate"
-          from="-1.1 0" to="1.1 0"
-          dur="2.2s" begin="0.3s"
-          fill="freeze" calcMode="spline"
-          keySplines="0.4 0 0.2 1"/>
-      </path>
-    </clipPath>
 
-    <!-- Wave clip for splash/wall logo (slightly different timing) -->
-    <clipPath id="wave-clip-splash" clipPathUnits="objectBoundingBox">
-      <path id="wave-path-splash" d="M -1.1 0 Q -0.85 0.5 -0.6 0 Q -0.35 -0.5 -0.1 0 Q 0.15 0.5 0.4 0 Q 0.65 -0.5 0.9 0 Q 1.15 0.5 1.4 0 L 1.4 1 L -1.1 1 Z">
-        <animateTransform attributeName="transform" type="translate"
-          from="-1.1 0" to="1.1 0"
-          dur="2.2s" begin="0.5s"
-          fill="freeze" calcMode="spline"
-          keySplines="0.4 0 0.2 1"/>
-      </path>
-    </clipPath>
-  </defs>
-</svg>
 
 <!-- Wave video background -->
 <div id="wave-bg">
@@ -567,10 +450,7 @@
 <div id="view-post" class="hidden">
 
   <div class="post-logo-wrap">
-    <div class="logo-reveal-wrap">
-      <div class="logo-reveal-glow"></div>
-      <img class="logo-reveal-img" id="post-logo" src="" alt="Kaizen Centre" style="height:52px;width:auto;">
-    </div>
+    <img class="site-logo" id="post-logo" src="" alt="Kaizen Centre" style="height:80px;width:auto;">
   </div>
 
   <div class="ornament">
@@ -582,7 +462,7 @@
   </div>
 
   <h1 class="post-h1">Good Today,<br><em>Better Tomorrow</em></h1>
-  <p class="post-tagline">Kaizen Centre &nbsp;·&nbsp; SMRT</p>
+  <p class="post-tagline">SMRT</p>
 
   <div class="post-card">
     <div id="success-overlay">
@@ -641,10 +521,6 @@
 ════════════════════════════════════════════════════════════ -->
 <div id="view-wall" class="hidden">
 
-  <!-- Splash / Logo Reveal overlay -->
-  <div id="wall-splash">
-    <div class="splash-logo-wrap">
-      <div class="splash-logo-glow"></div>
       <img class="splash-logo-img" id="splash-logo" src="" alt="Kaizen Centre">
     </div>
     <div class="splash-tagline">
@@ -657,12 +533,8 @@
   <!-- Header -->
   <header class="wall-header">
     <div class="wall-hdr-left">
-      <div class="wall-logo-reveal">
-        <img class="logo-reveal-img" id="wall-logo" src="" alt="Kaizen Centre"
-             style="height:40px;width:auto;clip-path:none;mix-blend-mode:normal;">
-      </div>
-      <div class="wall-hdr-vr"></div>
-      <div class="wall-hdr-kaizen">Kaizen Centre</div>
+      <img class="site-logo" id="wall-logo" src="" alt="Kaizen Centre"
+           style="height:52px;width:auto;">
     </div>
     <div class="wall-hdr-center">
       <div class="wall-title">Good Today, <em>Better Tomorrow</em></div>
@@ -748,9 +620,8 @@ const DEMO_POSTS = [
 function getView() { return new URLSearchParams(location.search).get('view') || 'wall'; }
 
 function boot() {
-  // Inject logo everywhere
-  const logoEls = ['post-logo','splash-logo','wall-logo'];
-  logoEls.forEach(id => {
+  // Inject logo into both views
+  ['post-logo','wall-logo'].forEach(id => {
     const el = document.getElementById(id);
     if (el && LOGO_SRC) el.src = LOGO_SRC;
   });
@@ -764,18 +635,6 @@ function boot() {
     initWall();
   }
 }
-
-/* ════════════════════════════════════════════════════════════
-   SPLASH (wall only)
-════════════════════════════════════════════════════════════ */
-function initSplash() {
-  const splash = document.getElementById('wall-splash');
-  const enter  = document.getElementById('splash-enter');
-
-  function dismiss() {
-    splash.classList.add('fade-out');
-    setTimeout(() => { splash.style.display = 'none'; }, 850);
-  }
 
   // Auto-dismiss after splash duration
   setTimeout(dismiss, CONFIG.SPLASH_DURATION);
@@ -877,7 +736,6 @@ function initForm() {
 let knownIds = new Set();
 
 function initWall() {
-  initSplash();
   tickClock();
   setInterval(tickClock, 1000);
   fetchAndRender();
