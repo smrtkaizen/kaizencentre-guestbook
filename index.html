@@ -770,11 +770,15 @@ function renderWall(posts) {
   cnt.textContent = posts.length;
 
   posts.sort((a,b) => {
-    if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
-    return new Date(b.postDate) - new Date(a.postDate);
-  });
+  const aPinned = a.IsPinned || a.isPinned || false;
+  const bPinned = b.IsPinned || b.isPinned || false;
+  const aDate   = a.PostDate || a.postDate || '';
+  const bDate   = b.PostDate || b.postDate || '';
+  if (aPinned !== bPinned) return aPinned ? -1 : 1;
+  return new Date(bDate) - new Date(aDate);
+});
 
-  const incoming = new Set(posts.map(p => String(p.id)));
+  const incoming = new Set(posts.map(p => String(p.ID || p.id)));
   const changed  = [...incoming].some(id => !knownIds.has(id)) || incoming.size !== knownIds.size;
   if (!changed) return;
   knownIds = incoming;
@@ -784,25 +788,33 @@ function renderWall(posts) {
 }
 
 function buildCard(post, i) {
+  // Map SharePoint field names to display values
+  const moment      = post.Title        || post.moment       || '';
+  const visitorName = post.VisitorName  || post.visitorName  || '';
+  const organisation= post.Organisation || post.organisation || '';
+  const photoURL    = post.PhotoURL     || post.photoURL     || '';
+  const postDate    = post.PostDate     || post.postDate     || '';
+  const isPinned    = post.IsPinned     || post.isPinned     || false;
+
   const el = document.createElement('div');
-  el.className = 'wall-card' + (post.isPinned ? ' pinned' : '');
+  el.className = 'wall-card' + (isPinned ? ' pinned' : '');
   el.style.animationDelay = `${i * 55}ms`;
 
-  const photoHTML = post.photoURL
-    ? `<img class="card-photo" src="${escHTML(post.photoURL)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+  const photoHTML = photoURL
+    ? `<img class="card-photo" src="${escHTML(photoURL)}" alt="" loading="lazy" onerror="this.style.display='none'">`
     : '';
-  const pinHTML = post.isPinned ? `<div class="pin-badge">Featured</div>` : '';
+  const pinHTML = isPinned ? `<div class="pin-badge">Featured</div>` : '';
 
   el.innerHTML = `
     ${photoHTML}${pinHTML}
     <span class="card-quote-mark">"</span>
-    <div class="card-moment">${escHTML(post.moment)}</div>
+    <div class="card-moment">${escHTML(moment)}</div>
     <div class="card-footer">
       <div>
-        <div class="card-visitor-name">${escHTML(post.visitorName)}</div>
-        <div class="card-visitor-org">${escHTML(post.organisation)}</div>
+        <div class="card-visitor-name">${escHTML(visitorName)}</div>
+        <div class="card-visitor-org">${escHTML(organisation)}</div>
       </div>
-      <div class="card-date">${fmtDate(post.postDate)}</div>
+      <div class="card-date">${fmtDate(postDate)}</div>
     </div>`;
   return el;
 }
