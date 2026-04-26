@@ -681,7 +681,21 @@ function initForm() {
       elPreview.style.display = 'block';
       elPhZone.style.display  = 'none';
     };
-    fr.readAsDataURL(file);
+    // Compress image before sending to stay within SharePoint column limits
+const img = new Image();
+img.onload = () => {
+  const canvas = document.createElement('canvas');
+  const MAX = 600;
+  let w = img.width, h = img.height;
+  if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+  canvas.width = w; canvas.height = h;
+  canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+  photoDataURL = canvas.toDataURL('image/jpeg', 0.55);
+  elPrevImg.src = photoDataURL;
+  elPreview.style.display = 'block';
+  elPhZone.style.display  = 'none';
+};
+img.src = ev.target.result;
   });
 
   elRemove.addEventListener('click', () => {
@@ -792,7 +806,7 @@ function buildCard(post, i) {
   const moment      = post.Title        || post.moment       || '';
   const visitorName = post.VisitorName  || post.visitorName  || '';
   const organisation= post.Organisation || post.organisation || '';
-  const photoURL    = post.PhotoURL     || post.photoURL     || '';
+  const photoURL    = post.PhotoBase64  || post.PhotoURL     || post.photoURL || '';
   const postDate    = post.PostDate     || post.postDate     || '';
   const isPinned    = post.IsPinned     || post.isPinned     || false;
 
@@ -801,8 +815,8 @@ function buildCard(post, i) {
   el.style.animationDelay = `${i * 55}ms`;
 
   const photoHTML = photoURL
-    ? `<img class="card-photo" src="${escHTML(photoURL)}" alt="" loading="lazy" onerror="this.style.display='none'">`
-    : '';
+  ? `<img class="card-photo" src="${photoURL.startsWith('data:') ? photoURL : escHTML(photoURL)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+  : '';
   const pinHTML = isPinned ? `<div class="pin-badge">Featured</div>` : '';
 
   el.innerHTML = `
