@@ -129,7 +129,6 @@
       margin-bottom: 30px;
       animation: fadeDown 0.5s 0.1s var(--ease) both;
     }
-    .post-logo-wrap .logo-reveal-img { height: 52px; width: auto; }
 
     .ornament {
       display: flex; align-items: center; gap: 14px;
@@ -552,7 +551,7 @@
       <div class="field">
         <label class="field-label">Capture Your Moment</label>
         <div class="photo-zone" id="photo-zone">
-          <input type="file" id="photo-input" accept="image/*" capture="environment">
+          <input type="file" id="photo-input" accept="image/*">
           <span class="photo-zone-icon">📷</span>
           <div class="photo-zone-text"><strong>Take a photo</strong><br>or upload from gallery</div>
         </div>
@@ -786,7 +785,7 @@ function initForm() {
   });
 
   elRemove.addEventListener('click', () => {
-    photoDataURL = ''; photoFileName = ''; elPhoto.value = '';
+    photoDataURL = ''; photoFileName = ''; photoOrientation = ''; elPhoto.value = '';
     elPreview.style.display = 'none'; elPhZone.style.display = 'block';
   });
 
@@ -893,7 +892,7 @@ function buildCard(post, i) {
   const moment      = post.Title        || post.moment       || '';
   const visitorName = post.VisitorName  || post.visitorName  || '';
   const organisation= post.Organisation || post.organisation || '';
-  const photoURL       = post.PhotoURL          || post.photoURL          || '';
+  const photoURL       = post.PhotoBase64 || post.photoBase64 || post.PhotoURL || post.photoURL || '';
   const postDate       = post.PostDate          || post.postDate          || '';
   const isPinned       = post.IsPinned          || post.isPinned          || false;
   const photoOrient    = post.PhotoOrientation  || post.photoOrientation  || 'landscape';
