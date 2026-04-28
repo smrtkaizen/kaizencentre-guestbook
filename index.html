@@ -337,7 +337,14 @@
     .post-count-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-m); }
     #post-count-num { color: var(--gold); }
 
-    .posts-grid { columns: 4 260px; column-gap: 20px; }
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+    /* Override break-inside — not needed for grid */
+    .wall-card { break-inside: unset; }
 
     .wall-card {
       break-inside: avoid;
@@ -385,23 +392,37 @@
       object-position: center 10%;
       max-height: 480px;
     }
-    /* Large landscape screens — 3 columns */
-    @media (min-width: 1600px) and (orientation: landscape) {
-      .posts-grid { columns: 3 380px; column-gap: 24px; }
-      .card-moment { font-size: clamp(15px, 1.2vw, 19px); }
-      .card-photo--portrait {
-        aspect-ratio: 2 / 3;
-        max-height: 560px;
-      }
+    /* ── Responsive grid — breakpoints based on actual pixel width ── */
+
+    /* Small laptop / 1280px–1599px — 3 columns */
+    @media (max-width: 1599px) and (orientation: landscape) {
+      .posts-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
     }
-    /* Very large screens — 65" TV landscape */
-    @media (min-width: 2200px) and (orientation: landscape) {
-      .posts-grid { columns: 3 480px; column-gap: 28px; }
-      .wall-card { padding: 26px; border-radius: 22px; }
+
+    /* Standard monitor / 1600px–1919px — 4 columns */
+    @media (min-width: 1600px) and (max-width: 1919px) and (orientation: landscape) {
+      .posts-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; }
+      .card-moment { font-size: clamp(14px, 1.1vw, 17px); }
     }
-    /* Portrait kiosk / vertical screen */
+
+    /* Large monitor / 1920px–2559px — 4 columns, larger cards */
+    @media (min-width: 1920px) and (max-width: 2559px) and (orientation: landscape) {
+      .posts-grid { grid-template-columns: repeat(4, 1fr); gap: 22px; }
+      .card-moment { font-size: clamp(15px, 1.1vw, 18px); }
+      .wall-card { padding: 24px; }
+    }
+
+    /* 4K / 65" TV at 100% — 4 columns, generous spacing */
+    @media (min-width: 2560px) and (orientation: landscape) {
+      .posts-grid { grid-template-columns: repeat(4, 1fr); gap: 28px; }
+      .card-moment { font-size: clamp(16px, 1.0vw, 20px); }
+      .wall-card { padding: 28px; border-radius: 22px; }
+      .card-visitor-name { font-size: clamp(14px, 0.9vw, 17px); }
+    }
+
+    /* Portrait kiosk / vertical screen — 2 columns */
     @media (orientation: portrait) {
-      .posts-grid { columns: 2 320px; column-gap: 22px; }
+      .posts-grid { grid-template-columns: repeat(2, 1fr); gap: 22px; }
       .card-photo--landscape { aspect-ratio: 4 / 3; }
       .card-photo--portrait  { aspect-ratio: 3 / 4; max-height: 600px; }
       .wall-title { font-size: clamp(22px, 4vw, 40px); }
@@ -551,7 +572,7 @@
       <div class="field">
         <label class="field-label">Capture Your Moment</label>
         <div class="photo-zone" id="photo-zone">
-          <input type="file" id="photo-input" accept="image/*">
+          <input type="file" id="photo-input" accept="image/*" capture="environment">
           <span class="photo-zone-icon">📷</span>
           <div class="photo-zone-text"><strong>Take a photo</strong><br>or upload from gallery</div>
         </div>
