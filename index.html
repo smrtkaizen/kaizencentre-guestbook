@@ -370,6 +370,7 @@
     .card-photo {
       width: calc(100% + 40px);
       margin: -20px -20px 18px;
+      aspect-ratio: 4 / 3;
       object-fit: cover;
       object-position: center 15%;
       display: block;
@@ -902,7 +903,7 @@ function buildCard(post, i) {
   el.style.animationDelay = `${i * 55}ms`;
 
   const photoHTML = photoURL
-    ? `<img class="card-photo card-photo--${photoOrient}" src="${photoURL.startsWith('data:') ? photoURL : escHTML(photoURL)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+    ? `<img class="card-photo card-photo--${photoOrient || 'landscape'}" src="${photoURL.startsWith('data:') ? photoURL : escHTML(photoURL)}" alt="" loading="lazy" onerror="this.style.display='none'">`
     : '';
   const pinHTML = isPinned ? `<div class="pin-badge">Featured</div>` : '';
 
