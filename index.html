@@ -370,27 +370,40 @@
     .card-photo {
       width: calc(100% + 40px);
       margin: -20px -20px 18px;
-      aspect-ratio: 4 / 3;
       object-fit: cover;
       object-position: center 15%;
       display: block;
     }
-    /* Large landscape screens — 3 columns gives more room per card */
+    /* Landscape photo — wide crop, shorter box */
+    .card-photo--landscape {
+      aspect-ratio: 4 / 3;
+      object-position: center 15%;
+    }
+    /* Portrait photo — taller box, minimal crop */
+    .card-photo--portrait {
+      aspect-ratio: 3 / 4;
+      object-position: center 10%;
+      max-height: 480px;
+    }
+    /* Large landscape screens — 3 columns */
     @media (min-width: 1600px) and (orientation: landscape) {
       .posts-grid { columns: 3 380px; column-gap: 24px; }
-      .card-photo { aspect-ratio: 4 / 3; }
       .card-moment { font-size: clamp(15px, 1.2vw, 19px); }
+      .card-photo--portrait {
+        aspect-ratio: 2 / 3;
+        max-height: 560px;
+      }
     }
     /* Very large screens — 65" TV landscape */
     @media (min-width: 2200px) and (orientation: landscape) {
       .posts-grid { columns: 3 480px; column-gap: 28px; }
-      .card-photo { aspect-ratio: 4 / 3; }
       .wall-card { padding: 26px; border-radius: 22px; }
     }
     /* Portrait kiosk / vertical screen */
     @media (orientation: portrait) {
       .posts-grid { columns: 2 320px; column-gap: 22px; }
-      .card-photo { aspect-ratio: 3 / 4; }
+      .card-photo--landscape { aspect-ratio: 4 / 3; }
+      .card-photo--portrait  { aspect-ratio: 3 / 4; max-height: 600px; }
       .wall-title { font-size: clamp(22px, 4vw, 40px); }
       .wall-clock { font-size: clamp(32px, 5vw, 50px); }
     }
@@ -692,7 +705,7 @@ function initForm() {
   const elPhZone  = document.getElementById('photo-zone');
   const elRemove  = document.getElementById('photo-remove');
 
-  let photoDataURL = '', photoFileName = '';
+  let photoDataURL = '', photoFileName = '', photoOrientation = '';
 
   elMoment.addEventListener('input', () => {
     const n = elMoment.value.length;
@@ -750,6 +763,7 @@ function initForm() {
         ctx.drawImage(img, 0, 0, w, h);
         ctx.restore();
         photoDataURL = canvas.toDataURL('image/jpeg', 0.78);
+        photoOrientation = (h > w) ? 'portrait' : 'landscape';
         elPrevImg.src = photoDataURL;
         elPreview.style.display = 'block';
         elPhZone.style.display  = 'none';
@@ -785,7 +799,7 @@ function initForm() {
 
     const payload = {
       moment: cleanText(moment), visitorName: cleanText(name), organisation: org,
-      photoBase64: photoDataURL, photoFileName, postDate: new Date().toISOString(),
+      photoBase64: photoDataURL, photoFileName, postDate: new Date().toISOString(), photoOrientation: photoOrientation,
     };
 
     setLoading(true);
@@ -810,7 +824,7 @@ function initForm() {
 
   document.getElementById('btn-again').addEventListener('click', () => {
     elMoment.value = ''; elName.value = ''; elOrg.value = '';
-    photoDataURL = ''; photoFileName = ''; elPhoto.value = '';
+    photoDataURL = ''; photoFileName = ''; photoOrientation = ''; elPhoto.value = '';
     elCharNum.textContent = '0';
     elCharNum.parentElement.classList.remove('warn');
     elPreview.style.display = 'none'; elPhZone.style.display = 'block';
@@ -878,17 +892,18 @@ function buildCard(post, i) {
   const moment      = post.Title        || post.moment       || '';
   const visitorName = post.VisitorName  || post.visitorName  || '';
   const organisation= post.Organisation || post.organisation || '';
-  const photoURL    = post.PhotoBase64  || post.PhotoURL     || post.photoURL || '';
-  const postDate    = post.PostDate     || post.postDate     || '';
-  const isPinned    = post.IsPinned     || post.isPinned     || false;
+  const photoURL       = post.PhotoURL          || post.photoURL          || '';
+  const postDate       = post.PostDate          || post.postDate          || '';
+  const isPinned       = post.IsPinned          || post.isPinned          || false;
+  const photoOrient    = post.PhotoOrientation  || post.photoOrientation  || 'landscape';
 
   const el = document.createElement('div');
   el.className = 'wall-card' + (isPinned ? ' pinned' : '');
   el.style.animationDelay = `${i * 55}ms`;
 
   const photoHTML = photoURL
-  ? `<img class="card-photo" src="${photoURL.startsWith('data:') ? photoURL : escHTML(photoURL)}" alt="" loading="lazy" onerror="this.style.display='none'">`
-  : '';
+    ? `<img class="card-photo card-photo--${photoOrient}" src="${photoURL.startsWith('data:') ? photoURL : escHTML(photoURL)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+    : '';
   const pinHTML = isPinned ? `<div class="pin-badge">Featured</div>` : '';
 
   el.innerHTML = `
