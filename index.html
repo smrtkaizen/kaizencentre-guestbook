@@ -205,7 +205,7 @@
     .photo-zone-text strong { color: var(--gold-light); font-weight: 500; }
 
     #photo-preview-wrap { margin-top: 14px; position: relative; border-radius: 12px; overflow: hidden; }
-    #photo-preview-img { width: 100%; max-height: 420px; object-fit: contain; background: #0d1220; border-radius: 12px; }
+    #photo-preview-img { width: 100%; max-height: 420px; object-fit: contain; background: #0a0f1e; border-radius: 12px; }
     .photo-remove {
       position: absolute; top: 9px; right: 9px;
       background: rgba(0,0,0,0.65); border: 1px solid rgba(255,255,255,0.18);
@@ -340,11 +340,12 @@
     .posts-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
+      column-gap: 20px;
+      row-gap: 0;
       align-items: start;
     }
     /* Override break-inside — not needed for grid */
-    .wall-card { break-inside: unset; }
+    .wall-card { break-inside: unset; margin-bottom: 20px; }
 
     .wall-card {
       break-inside: avoid;
@@ -369,7 +370,7 @@
     .pin-badge {
       position: absolute; top: 13px; right: 13px;
       background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      color: #0d1220; font-size: 8px; font-weight: 600;
+      color: #06080F; font-size: 8px; font-weight: 600;
       letter-spacing: 0.14em; text-transform: uppercase;
       padding: 3px 9px; border-radius: 5px;
     }
@@ -379,13 +380,13 @@
       display: block;
       background: #0d1220;
     }
-    /* Landscape — cover fills card fully, minimal top/bottom crop */
+    /* Landscape — 16:9 matches phone camera, cover fills fully, no side crop */
     .card-photo--landscape {
-      aspect-ratio: 4 / 3;
+      aspect-ratio: 16 / 9;
       object-fit: cover;
       object-position: center 20%;
     }
-    /* Portrait — contain shows full photo, minimal side bars */
+    /* Portrait — contain shows full photo, no top/bottom crop */
     .card-photo--portrait {
       aspect-ratio: 3 / 4;
       object-fit: contain;
@@ -394,20 +395,20 @@
 
     /* Laptop and above / 1024px+ — always 4 columns landscape */
     @media (min-width: 1024px) and (max-width: 1919px) and (orientation: landscape) {
-      .posts-grid { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+      .posts-grid { grid-template-columns: repeat(4, 1fr); column-gap: 18px; row-gap: 0; }
       .card-moment { font-size: clamp(14px, 1.1vw, 17px); }
     }
 
     /* Large monitor / 1920px-2559px — 4 columns, larger cards */
     @media (min-width: 1920px) and (max-width: 2559px) and (orientation: landscape) {
-      .posts-grid { grid-template-columns: repeat(4, 1fr); gap: 22px; }
+      .posts-grid { grid-template-columns: repeat(4, 1fr); column-gap: 22px; row-gap: 0; }
       .card-moment { font-size: clamp(15px, 1.1vw, 18px); }
       .wall-card { padding: 24px; }
     }
 
     /* 4K / 65" TV at 100% scaling — 4 columns, generous spacing */
     @media (min-width: 2560px) and (orientation: landscape) {
-      .posts-grid { grid-template-columns: repeat(4, 1fr); gap: 28px; }
+      .posts-grid { grid-template-columns: repeat(4, 1fr); column-gap: 28px; row-gap: 0; }
       .card-moment { font-size: clamp(16px, 1.0vw, 20px); }
       .wall-card { padding: 28px; border-radius: 22px; }
       .card-visitor-name { font-size: clamp(14px, 0.9vw, 17px); }
@@ -415,9 +416,9 @@
 
     /* Portrait kiosk / vertical screen — 2 columns */
     @media (orientation: portrait) {
-      .posts-grid { grid-template-columns: repeat(2, 1fr); gap: 22px; }
-      .card-photo--landscape { aspect-ratio: 4 / 3; }
-      .card-photo--portrait  { aspect-ratio: 3 / 4; }
+      .posts-grid { grid-template-columns: repeat(2, 1fr); column-gap: 22px; row-gap: 0; }
+      .card-photo--landscape { aspect-ratio: 16 / 9; object-fit: cover; object-position: center 20%; }
+      .card-photo--portrait  { aspect-ratio: 3 / 4; object-fit: contain; }
       .wall-title { font-size: clamp(22px, 4vw, 40px); }
       .wall-clock { font-size: clamp(32px, 5vw, 50px); }
     }
@@ -565,7 +566,7 @@
       <div class="field">
         <label class="field-label">Capture Your Moment</label>
         <div class="photo-zone" id="photo-zone">
-          <input type="file" id="photo-input" accept="image/*" capture="environment">
+          <input type="file" id="photo-input" accept="image/*">
           <span class="photo-zone-icon">📷</span>
           <div class="photo-zone-text"><strong>Take a photo</strong><br>or upload from gallery</div>
         </div>
