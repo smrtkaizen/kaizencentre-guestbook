@@ -190,6 +190,19 @@
     .char-counter.warn { color: var(--gold); }
     .field-divider { height: 1px; background: var(--border-s); margin: 24px 0; }
 
+    .photo-zone {
+      border: 1.5px dashed var(--border); border-radius: var(--r-input);
+      padding: 22px 16px; text-align: center; cursor: pointer;
+      transition: border-color var(--t) var(--ease), background var(--t) var(--ease);
+      position: relative; overflow: hidden;
+    }
+    .photo-zone:hover { border-color: var(--gold); background: var(--gold-glow); }
+    .photo-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .photo-zone-icon { font-size: 30px; margin-bottom: 8px; display: block; }
+    .photo-zone-text { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+    .photo-zone-text strong { color: var(--gold-light); font-weight: 500; }
     .photo-buttons {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -580,8 +593,9 @@
           </button>
           <button class="photo-btn" id="btn-gallery" type="button">
             <span class="photo-btn-icon">🖼️</span>
-            <span class="photo-btn-label">Choose<br>from Gallery</span>
+            <span class="photo-btn-label">Choose<br>from<br>Gallery</span>
           </button>
+          <!-- Hidden inputs — one forces camera, one forces gallery -->
           <input type="file" id="photo-input-camera"  accept="image/*" capture="environment" style="display:none;">
           <input type="file" id="photo-input-gallery" accept="image/*" style="display:none;">
         </div>
@@ -729,13 +743,13 @@ function initForm() {
   const elOrg     = document.getElementById('fld-org');
   const elPhotoCamera  = document.getElementById('photo-input-camera');
   const elPhotoGallery = document.getElementById('photo-input-gallery');
-  const elBtnCamera    = document.getElementById('btn-camera');
-  const elBtnGallery   = document.getElementById('btn-gallery');
   const elCharNum = document.getElementById('char-num');
   const elSubmit  = document.getElementById('submit-btn');
   const elPreview = document.getElementById('photo-preview-wrap');
   const elPrevImg = document.getElementById('photo-preview-img');
   const elPhZone  = document.getElementById('photo-zone');
+  const elBtnCamera  = document.getElementById('btn-camera');
+  const elBtnGallery = document.getElementById('btn-gallery');
   const elRemove  = document.getElementById('photo-remove');
 
   let photoDataURL = '', photoFileName = '', photoOrientation = '', photoRatio = '';
@@ -746,25 +760,28 @@ function initForm() {
     elCharNum.parentElement.classList.toggle('warn', n > 260);
   });
 
-  // Shared photo processing — used by both camera and gallery
-  function handlePhotoFile(file) {
+  elPhoto.addEventListener('change', e => {
+    const file = e.target.files[0];
     if (!file) return;
+
+    // Show toast if over 10MB (generous limit before compression)
     if (file.size > 10 * 1024 * 1024) {
       showToast('📷 Photo must be under 10 MB');
+      elPhoto.value = '';
       return;
     }
+
     photoFileName = `${Date.now()}_${(elName.value||'visitor').replace(/\s+/g,'_').toLowerCase()}.jpg`;
 
+    // Use createObjectURL for preview — works reliably for camera capture
     const objectURL = URL.createObjectURL(file);
     const img = new Image();
 
-    const fallbackRead = () => {
-      URL.revokeObjectURL(objectURL);
+    img.onerror = () => {
+      // Fallback — read as data URL directly without compression
       const fr = new FileReader();
       fr.onload = ev => {
-        photoDataURL     = ev.target.result;
-        photoOrientation = 'landscape';
-        photoRatio       = '';
+        photoDataURL = ev.target.result;
         elPrevImg.src = photoDataURL;
         elPreview.style.display = 'block';
         elPhZone.style.display  = 'none';
@@ -772,24 +789,29 @@ function initForm() {
       fr.readAsDataURL(file);
     };
 
-    img.onerror = () => fallbackRead();
-
     img.onload = () => {
       URL.revokeObjectURL(objectURL);
       try {
         const canvas = document.createElement('canvas');
-        const MAX_W = 1400, MAX_H = 1400;
+        // Scale to fit within bounding box preserving aspect ratio
+        // Portrait: max width 600, max height 900
+        // Landscape: max width 900, max height 600
+        const MAX_W = 1400;
+        const MAX_H = 1400;
         let w = img.width, h = img.height;
         const ratio = Math.min(MAX_W / w, MAX_H / h, 1);
         w = Math.round(w * ratio);
         h = Math.round(h * ratio);
-        canvas.width = w; canvas.height = h;
+        canvas.width = w;
+        canvas.height = h;
         const ctx = canvas.getContext('2d');
+        // Handle EXIF orientation for mobile camera photos
         ctx.save();
         ctx.drawImage(img, 0, 0, w, h);
         ctx.restore();
-        photoDataURL     = canvas.toDataURL('image/jpeg', 0.78);
+        photoDataURL = canvas.toDataURL('image/jpeg', 0.78);
         photoOrientation = (h > w) ? 'portrait' : 'landscape';
+        // Store actual ratio for precise display e.g. "16:9" or "4:3"
         const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
         const d = gcd(w, h);
         photoRatio = (w/d) + ':' + (h/d);
@@ -797,23 +819,25 @@ function initForm() {
         elPreview.style.display = 'block';
         elPhZone.style.display  = 'none';
       } catch(err) {
+        // Canvas failed — fallback to raw FileReader
         console.error('Canvas error:', err);
-        fallbackRead();
+        const fr = new FileReader();
+        fr.onload = ev => {
+          photoDataURL = ev.target.result;
+          elPrevImg.src = photoDataURL;
+          elPreview.style.display = 'block';
+          elPhZone.style.display  = 'none';
+        };
+        fr.readAsDataURL(file);
       }
     };
 
     img.src = objectURL;
-  }
-
-  // Wire buttons to hidden inputs
-  elBtnCamera.addEventListener('click',  () => elPhotoCamera.click());
-  elBtnGallery.addEventListener('click', () => elPhotoGallery.click());
-  elPhotoCamera.addEventListener('change',  e => handlePhotoFile(e.target.files[0]));
-  elPhotoGallery.addEventListener('change', e => handlePhotoFile(e.target.files[0]));
+  });
 
   elRemove.addEventListener('click', () => {
     photoDataURL = ''; photoFileName = ''; photoOrientation = ''; photoRatio = '';
-    elPhotoCamera.value = ''; elPhotoGallery.value = '';
+    elPhoto.value = '';
     elPreview.style.display = 'none';
     elPhZone.style.display  = 'block';
   });
@@ -856,7 +880,7 @@ function initForm() {
   document.getElementById('btn-again').addEventListener('click', () => {
     elMoment.value = ''; elName.value = ''; elOrg.value = '';
     photoDataURL = ''; photoFileName = ''; photoOrientation = ''; photoRatio = '';
-    elPhotoCamera.value = ''; elPhotoGallery.value = '';
+    elPhoto.value = '';
     elCharNum.textContent = '0';
     elCharNum.parentElement.classList.remove('warn');
     elPreview.style.display = 'none';
