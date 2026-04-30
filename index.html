@@ -720,7 +720,7 @@ function initForm() {
   const elPhZone  = document.getElementById('photo-zone');
   const elRemove  = document.getElementById('photo-remove');
 
-  let photoDataURL = '', photoFileName = '', photoOrientation = '';
+  let photoDataURL = '', photoFileName = '', photoOrientation = '', photoRatio = '';
 
   elMoment.addEventListener('input', () => {
     const n = elMoment.value.length;
@@ -779,6 +779,10 @@ function initForm() {
         ctx.restore();
         photoDataURL = canvas.toDataURL('image/jpeg', 0.78);
         photoOrientation = (h > w) ? 'portrait' : 'landscape';
+        // Store actual ratio for precise display e.g. "16:9" or "4:3"
+        const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+        const d = gcd(w, h);
+        photoRatio = (w/d) + ':' + (h/d);
         elPrevImg.src = photoDataURL;
         elPreview.style.display = 'block';
         elPhZone.style.display  = 'none';
@@ -800,7 +804,7 @@ function initForm() {
   });
 
   elRemove.addEventListener('click', () => {
-    photoDataURL = ''; photoFileName = ''; photoOrientation = ''; elPhoto.value = '';
+    photoDataURL = ''; photoFileName = ''; photoOrientation = ''; photoRatio = ''; elPhotoCamera.value = ''; elPhotoGallery.value = '';
     elPreview.style.display = 'none'; elPhZone.style.display = 'block';
   });
 
@@ -814,7 +818,9 @@ function initForm() {
 
     const payload = {
       moment: cleanText(moment), visitorName: cleanText(name), organisation: org,
-      photoBase64: photoDataURL, photoFileName, postDate: new Date().toISOString(), photoOrientation: photoOrientation,
+      photoBase64: photoDataURL, photoFileName, postDate: new Date().toISOString(),
+      photoOrientation: photoOrientation,
+      photoRatio: photoRatio,
     };
 
     setLoading(true);
@@ -839,7 +845,7 @@ function initForm() {
 
   document.getElementById('btn-again').addEventListener('click', () => {
     elMoment.value = ''; elName.value = ''; elOrg.value = '';
-    photoDataURL = ''; photoFileName = ''; photoOrientation = ''; elPhoto.value = '';
+    photoDataURL = ''; photoFileName = ''; photoOrientation = ''; photoRatio = ''; elPhotoCamera.value = ''; elPhotoGallery.value = '';
     elCharNum.textContent = '0';
     elCharNum.parentElement.classList.remove('warn');
     elPreview.style.display = 'none'; elPhZone.style.display = 'block';
@@ -911,13 +917,17 @@ function buildCard(post, i) {
   const postDate       = post.PostDate          || post.postDate          || '';
   const isPinned       = post.IsPinned          || post.isPinned          || false;
   const photoOrient    = post.PhotoOrientation  || post.photoOrientation  || 'landscape';
+  const photoRatio     = post.PhotoRatio        || post.photoRatio        || '16:9';
 
   const el = document.createElement('div');
   el.className = 'wall-card' + (isPinned ? ' pinned' : '');
   el.style.animationDelay = `${i * 55}ms`;
 
   const photoHTML = photoURL
-    ? `<img class="card-photo card-photo--${photoOrient || 'landscape'}" src="${photoURL.startsWith('data:') ? photoURL : escHTML(photoURL)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+    ? `<img class="card-photo card-photo--${photoOrient}"
+           style="aspect-ratio:${photoRatio.replace(':','/')};"
+           src="${photoURL.startsWith('data:') ? photoURL : escHTML(photoURL)}"
+           alt="" loading="lazy" onerror="this.style.display='none'">`
     : '';
   const pinHTML = isPinned ? `<div class="pin-badge">Featured</div>` : '';
 
