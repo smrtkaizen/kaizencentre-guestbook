@@ -551,7 +551,7 @@
 
     <div id="form-body">
       <div class="field">
-        <label class="field-label" for="fld-moment">Share your Kaizen moment here</label>
+        <label class="field-label" for="fld-moment">Share your Kaizen Pledge here</label>
         <textarea id="fld-moment" class="field-textarea"
           placeholder="One Kaizen pledge I will carry forward:"
           maxlength="300"></textarea>
@@ -632,7 +632,7 @@
     <div class="posts-grid" id="posts-grid"></div>
     <div class="wall-empty hidden" id="wall-empty">
       <div class="wall-empty-glyph">✦</div>
-      <div class="wall-empty-text">Be the first to share your Kaizen moment today</div>
+      <div class="wall-empty-text">Be the first to share your Kaizen Pledge today</div>
     </div>
   </div>
 
@@ -643,7 +643,7 @@
     </div>
     <div class="qr-text">
       <strong>Point your camera here</strong>
-      to share your Kaizen moment
+      to share your Kaizen pledge
     </div>
   </div>
 </div>
@@ -822,7 +822,7 @@ function initForm() {
     const moment = elMoment.value.trim();
     const name   = elName.value.trim();
     const org    = elOrg.value.trim();
-    if (!moment) { showToast('Please share your Kaizen moment'); elMoment.focus(); return; }
+    if (!moment) { showToast('Please share your Kaizen Pledge'); elMoment.focus(); return; }
     if (!name)   { showToast('Please enter your name');          elName.focus();   return; }
     if (!org)    { showToast('Please enter your organisation');  elOrg.focus();    return; }
 
