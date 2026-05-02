@@ -191,7 +191,7 @@
     .field-divider { height: 1px; background: var(--border-s); margin: 24px 0; }
 
     .photo-buttons {
-      display: grid !important;
+      display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
@@ -551,9 +551,9 @@
 
     <div id="form-body">
       <div class="field">
-        <label class="field-label" for="fld-moment">Share your Kaizen Pledge here</label>
+        <label class="field-label" for="fld-moment">Share your Kaizen moment here</label>
         <textarea id="fld-moment" class="field-textarea"
-          placeholder="One Kaizen pledge I will carry forward:"
+          placeholder="What inspired you today? What will you carry forward?"
           maxlength="300"></textarea>
         <div class="char-counter"><span id="char-num">0</span> / 300</div>
       </div>
@@ -580,7 +580,7 @@
           </button>
           <button class="photo-btn" id="btn-gallery" type="button">
             <span class="photo-btn-icon">🖼️</span>
-            <span class="photo-btn-label">Upload Gallery</span>
+            <span class="photo-btn-label">Choose from Gallery</span>
           </button>
           <input type="file" id="photo-input-camera"  accept="image/*" capture="environment" style="display:none;">
           <input type="file" id="photo-input-gallery" accept="image/*" style="display:none;">
@@ -632,7 +632,7 @@
     <div class="posts-grid" id="posts-grid"></div>
     <div class="wall-empty hidden" id="wall-empty">
       <div class="wall-empty-glyph">✦</div>
-      <div class="wall-empty-text">Be the first to share your Kaizen Pledge today</div>
+      <div class="wall-empty-text">Be the first to share your Kaizen moment today</div>
     </div>
   </div>
 
@@ -643,7 +643,7 @@
     </div>
     <div class="qr-text">
       <strong>Point your camera here</strong>
-      to share your Kaizen pledge
+      to share your Kaizen moment
     </div>
   </div>
 </div>
@@ -822,7 +822,7 @@ function initForm() {
     const moment = elMoment.value.trim();
     const name   = elName.value.trim();
     const org    = elOrg.value.trim();
-    if (!moment) { showToast('Please share your Kaizen Pledge'); elMoment.focus(); return; }
+    if (!moment) { showToast('Please share your Kaizen moment'); elMoment.focus(); return; }
     if (!name)   { showToast('Please enter your name');          elName.focus();   return; }
     if (!org)    { showToast('Please enter your organisation');  elOrg.focus();    return; }
 
@@ -876,79 +876,6 @@ function initWall() {
   setInterval(tickClock, 1000);
   fetchAndRender();
   setInterval(fetchAndRender, CONFIG.POLL_INTERVAL_MS);
-  initAutoScroll();
-}
-
-/* ════════════════════════════════════════════════════════════
-   SMART AUTO-SCROLL
-   Only scrolls when content exceeds visible screen height.
-   Pauses on mouse/touch interaction, resets to top on new posts.
-════════════════════════════════════════════════════════════ */
-let _scrollTimer      = null;   // rAF reference
-let _scrollPaused     = false;  // paused by user interaction
-let _pauseTimer       = null;   // timeout to resume after pause
-let _scrollSpeed      = 0.6;    // px per frame — gentle pace
-let _atBottom         = false;  // flag when bottom reached
-let _bottomPauseTimer = null;   // pause at bottom before reset
-
-function initAutoScroll() {
-  // Pause on mouse move or touch
-  const pauseScroll = () => {
-    _scrollPaused = true;
-    clearTimeout(_pauseTimer);
-    _pauseTimer = setTimeout(() => { _scrollPaused = false; }, 10000);
-  };
-  window.addEventListener('mousemove', pauseScroll);
-  window.addEventListener('touchstart', pauseScroll, { passive: true });
-
-  // Start the scroll loop
-  _scrollLoop();
-}
-
-function _scrollLoop() {
-  _scrollTimer = requestAnimationFrame(_scrollLoop);
-
-  // Only scroll wall view
-  if (document.getElementById('view-wall').classList.contains('hidden')) return;
-
-  // Check if content overflows the viewport
-  const body       = document.getElementById('posts-grid');
-  const wallBody   = document.querySelector('.wall-body');
-  if (!body || !wallBody) return;
-
-  const totalH   = wallBody.scrollHeight;
-  const visibleH = window.innerHeight;
-
-  // Not enough content to scroll — stay still
-  if (totalH <= visibleH + 10) {
-    window.scrollTo({ top: 0 });
-    return;
-  }
-
-  if (_scrollPaused) return;
-  if (_atBottom)     return; // waiting at bottom
-
-  const currentY = window.scrollY;
-  const maxY     = document.documentElement.scrollHeight - visibleH;
-
-  if (currentY >= maxY - 2) {
-    // Reached bottom — pause 4 seconds then scroll back to top
-    _atBottom = true;
-    clearTimeout(_bottomPauseTimer);
-    _bottomPauseTimer = setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      setTimeout(() => { _atBottom = false; }, 1200);
-    }, 4000);
-  } else {
-    window.scrollBy(0, _scrollSpeed);
-  }
-}
-
-function scrollResetToTop() {
-  // Called when new posts arrive — scroll back to top to show new content
-  _atBottom = false;
-  clearTimeout(_bottomPauseTimer);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 async function fetchAndRender() {
@@ -991,8 +918,6 @@ function renderWall(posts) {
 
   grid.innerHTML = '';
   posts.forEach((post, i) => grid.appendChild(buildCard(post, i)));
-  // New posts arrived — scroll to top so fresh content is seen first
-  scrollResetToTop();
 }
 
 function buildCard(post, i) {
