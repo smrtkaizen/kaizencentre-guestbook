@@ -876,6 +876,79 @@ function initWall() {
   setInterval(tickClock, 1000);
   fetchAndRender();
   setInterval(fetchAndRender, CONFIG.POLL_INTERVAL_MS);
+  initAutoScroll();
+}
+
+/* ════════════════════════════════════════════════════════════
+   SMART AUTO-SCROLL
+   Only scrolls when content exceeds visible screen height.
+   Pauses on mouse/touch interaction, resets to top on new posts.
+════════════════════════════════════════════════════════════ */
+let _scrollTimer      = null;   // rAF reference
+let _scrollPaused     = false;  // paused by user interaction
+let _pauseTimer       = null;   // timeout to resume after pause
+let _scrollSpeed      = 0.6;    // px per frame — gentle pace
+let _atBottom         = false;  // flag when bottom reached
+let _bottomPauseTimer = null;   // pause at bottom before reset
+
+function initAutoScroll() {
+  // Pause on mouse move or touch
+  const pauseScroll = () => {
+    _scrollPaused = true;
+    clearTimeout(_pauseTimer);
+    _pauseTimer = setTimeout(() => { _scrollPaused = false; }, 10000);
+  };
+  window.addEventListener('mousemove', pauseScroll);
+  window.addEventListener('touchstart', pauseScroll, { passive: true });
+
+  // Start the scroll loop
+  _scrollLoop();
+}
+
+function _scrollLoop() {
+  _scrollTimer = requestAnimationFrame(_scrollLoop);
+
+  // Only scroll wall view
+  if (document.getElementById('view-wall').classList.contains('hidden')) return;
+
+  // Check if content overflows the viewport
+  const body       = document.getElementById('posts-grid');
+  const wallBody   = document.querySelector('.wall-body');
+  if (!body || !wallBody) return;
+
+  const totalH   = wallBody.scrollHeight;
+  const visibleH = window.innerHeight;
+
+  // Not enough content to scroll — stay still
+  if (totalH <= visibleH + 10) {
+    window.scrollTo({ top: 0 });
+    return;
+  }
+
+  if (_scrollPaused) return;
+  if (_atBottom)     return; // waiting at bottom
+
+  const currentY = window.scrollY;
+  const maxY     = document.documentElement.scrollHeight - visibleH;
+
+  if (currentY >= maxY - 2) {
+    // Reached bottom — pause 4 seconds then scroll back to top
+    _atBottom = true;
+    clearTimeout(_bottomPauseTimer);
+    _bottomPauseTimer = setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => { _atBottom = false; }, 1200);
+    }, 4000);
+  } else {
+    window.scrollBy(0, _scrollSpeed);
+  }
+}
+
+function scrollResetToTop() {
+  // Called when new posts arrive — scroll back to top to show new content
+  _atBottom = false;
+  clearTimeout(_bottomPauseTimer);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 async function fetchAndRender() {
@@ -918,6 +991,8 @@ function renderWall(posts) {
 
   grid.innerHTML = '';
   posts.forEach((post, i) => grid.appendChild(buildCard(post, i)));
+  // New posts arrived — scroll to top so fresh content is seen first
+  scrollResetToTop();
 }
 
 function buildCard(post, i) {
