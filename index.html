@@ -959,8 +959,9 @@ function generateQR() {
 let _scrollPaused     = false;
 let _pauseTimer       = null;
 let _atBottom         = false;
+let _returningToTop   = false;
 let _bottomPauseTimer = null;
-const _scrollSpeed    = 0.6; // px per frame
+const _scrollSpeed    = 0.6;  // px per frame — gentle reading pace
 
 function initAutoScroll() {
   const el = document.getElementById('view-wall');
@@ -987,16 +988,29 @@ function _scrollLoop() {
     return;
   }
 
+  // Smooth animated return to top
+  if (_returningToTop) {
+    if (el.scrollTop <= 1) {
+      el.scrollTop    = 0;
+      _returningToTop = false;
+      _atBottom       = false;
+    } else {
+      // Ease out — slow down as we approach top
+      const step = Math.max(1, el.scrollTop * 0.06);
+      el.scrollTop -= step;
+    }
+    return;
+  }
+
   if (_scrollPaused || _atBottom) return;
 
   const maxY = el.scrollHeight - el.clientHeight;
   if (el.scrollTop >= maxY - 2) {
-    // Reached bottom — pause 4s then smooth scroll back to top
+    // Reached bottom — pause 4s then animate back to top
     _atBottom = true;
     clearTimeout(_bottomPauseTimer);
     _bottomPauseTimer = setTimeout(() => {
-      el.scrollTo({ top: 0, behavior: 'smooth' });
-      setTimeout(() => { _atBottom = false; }, 1200);
+      _returningToTop = true;
     }, 4000);
   } else {
     el.scrollTop += _scrollSpeed;
@@ -1004,10 +1018,9 @@ function _scrollLoop() {
 }
 
 function scrollResetToTop() {
-  _atBottom = false;
+  _atBottom       = false;
+  _returningToTop = true;
   clearTimeout(_bottomPauseTimer);
-  const el = document.getElementById('view-wall');
-  if (el) el.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 async function fetchAndRender() {
