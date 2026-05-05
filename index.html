@@ -959,14 +959,8 @@ function generateQR() {
 let _scrollPaused     = false;
 let _pauseTimer       = null;
 let _atBottom         = false;
-let _returningToTop   = false;
-let _atTop            = false;      // pause after returning to top
 let _bottomPauseTimer = null;
-let _topPauseTimer    = null;
-let _lastTime         = null;       // timestamp for frame-rate-independent speed
-
-// Speed in px per second — consistent across 30/60/90/120Hz screens
-const _scrollPxPerSec = 30;        // ~0.5px at 60fps, smooth on all screens
+const _scrollSpeed    = 0.5; // px per frame
 
 function initAutoScroll() {
   const el = document.getElementById('view-wall');
@@ -978,68 +972,42 @@ function initAutoScroll() {
   };
   el.addEventListener('mousemove',  pauseScroll);
   el.addEventListener('touchstart', pauseScroll, { passive: true });
-  requestAnimationFrame(_scrollLoop);
+  _scrollLoop();
 }
 
-function _scrollLoop(timestamp) {
+function _scrollLoop() {
   requestAnimationFrame(_scrollLoop);
 
   const el = document.getElementById('view-wall');
-  if (!el || el.classList.contains('hidden')) { _lastTime = null; return; }
+  if (!el || el.classList.contains('hidden')) return;
 
   // Only scroll when content overflows the container
   if (el.scrollHeight <= el.clientHeight + 10) {
     el.scrollTop = 0;
-    _lastTime = null;
     return;
   }
 
-  // Calculate time delta — makes speed identical on all screen refresh rates
-  if (!_lastTime) { _lastTime = timestamp; return; }
-  const delta   = Math.min(timestamp - _lastTime, 50); // cap at 50ms to prevent jumps after tab switch
-  _lastTime = timestamp;
-
-  // Smooth ease-out return to top using time-based steps
-  if (_returningToTop) {
-    if (el.scrollTop <= 1) {
-      el.scrollTop    = 0;
-      _returningToTop = false;
-      // Pause at top for 4 seconds before resuming scroll
-      _atTop = true;
-      clearTimeout(_topPauseTimer);
-      _topPauseTimer = setTimeout(() => { _atTop = false; }, 4000);
-    } else {
-      // Ease out — 8% of remaining distance per frame, min 2px
-      const step = Math.max(2, el.scrollTop * 0.08);
-      el.scrollTop -= step;
-    }
-    return;
-  }
-
-  if (_scrollPaused || _atBottom || _atTop) return;
+  if (_scrollPaused || _atBottom) return;
 
   const maxY = el.scrollHeight - el.clientHeight;
   if (el.scrollTop >= maxY - 2) {
-    // Reached bottom — pause 4s then animate back to top
+    // Reached bottom — pause 4s then smooth scroll back to top
     _atBottom = true;
     clearTimeout(_bottomPauseTimer);
     _bottomPauseTimer = setTimeout(() => {
-      _atBottom       = false;
-      _returningToTop = true;
+      el.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => { _atBottom = false; }, 1200);
     }, 4000);
   } else {
-    // Time-based scroll — same speed on every screen
-    el.scrollTop += (_scrollPxPerSec * delta) / 1000;
+    el.scrollTop += _scrollSpeed;
   }
 }
 
 function scrollResetToTop() {
-  _atBottom       = false;
-  _atTop          = false;
-  _returningToTop = true;
-  _lastTime       = null;
+  _atBottom = false;
   clearTimeout(_bottomPauseTimer);
-  clearTimeout(_topPauseTimer);
+  const el = document.getElementById('view-wall');
+  if (el) el.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 async function fetchAndRender() {
